@@ -90,6 +90,8 @@ export default class Block {
     return this;
   }
 
+  // NOTE: This function has a time complexity: O(the number of descendant blocks)
+  // This is acceptable because the number of descendant blocks is expected to be small (< 1000)
   getBlockById(id) {
     if (this.id === id) {
       return this;
