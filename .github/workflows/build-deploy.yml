@@ -19,6 +19,7 @@ jobs:
           npm install
           npm run build
           npm test
+          ls -R dist/
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v4
