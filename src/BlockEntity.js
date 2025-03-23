@@ -19,14 +19,14 @@ export default class Block {
    * cf. Tree traversal - Wikipedia https://en.wikipedia.org/wiki/Tree_traversal
    */
   getNextBlock() {
-    // case 1: current has children
+    // case 1: the current block has children
     //   Return the first child
     if (this.children.length > 0) {
       return this.children[0];
     }
 
-    // case 2: current has no children
-    //   Go up the tree until we find a parent that has a next sibling
+    // case 2: the current block has no children
+    //   Go up the tree until we find a parent that has a closest older sibling
     let current = this;
     while (current?.parent) {
       const [parent, currentIdx] = current.getParentAndIdx();
@@ -34,6 +34,7 @@ export default class Block {
         console.debug("no parent at getNextBlock");
         return null;
       }
+      // if a closest older sibling exists
       if (currentIdx < parent.children.length - 1) {
         return parent.children[currentIdx + 1];
       }
@@ -74,6 +75,9 @@ export default class Block {
     return this.children[this.children.length - 1];
   }
 
+  /**
+   * Retrieve the parent block and the index of the current block in the parent's children array.
+   */
   getParentAndIdx() {
     if (!this?.parent?.children) {
       console.error("Block has no parent or parent has no children.");
@@ -101,8 +105,12 @@ export default class Block {
     return this;
   }
 
-  // NOTE: This function has a time complexity: O(the number of descendant blocks)
-  // This is acceptable because the number of descendant blocks is expected to be small (< 1000)
+  /**
+   * Retrieve its descendant block by its id.
+   *
+   * NOTE: This function has a time complexity: O(the number of descendant blocks).
+   * This is acceptable because the number of descendant blocks is expected to be small (< 1000)
+   */
   getBlockById(id) {
     if (this.id === id) {
       return this;
