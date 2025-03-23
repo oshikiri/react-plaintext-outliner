@@ -13,6 +13,11 @@ export default class Block {
     return this;
   }
 
+  /**
+   * Retrieve the next block in a pre-order depth-first tree traversal.
+   *
+   * cf. Tree traversal - Wikipedia https://en.wikipedia.org/wiki/Tree_traversal
+   */
   getNextBlock() {
     // case 1: current has children
     //   Return the first child
@@ -38,29 +43,35 @@ export default class Block {
     return null;
   }
 
+  /**
+   * Retrieve the previous block in a pre-order depth-first tree traversal.
+   *
+   * cf. Tree traversal - Wikipedia https://en.wikipedia.org/wiki/Tree_traversal
+   */
   getPrevBlock() {
-    const [parent, idx] = this.getParentAndIdx();
+    const [parent, currentIdx] = this.getParentAndIdx();
     if (!parent) {
       return null;
     }
-    if (idx === 0) {
+    if (currentIdx === 0) {
       return parent;
     }
-    return this.parent.children[idx - 1].getLastChild();
+    const closestOlderSibling = parent.children[currentIdx - 1];
+    return closestOlderSibling.getLastDescendant();
   }
 
-  getFirstChild() {
+  /**
+   * Returns the last descendant of the current block, including itself.
+   */
+  getLastDescendant() {
     if (this.children.length === 0) {
       return this;
     }
-    return this.children[0];
+    return this.getLastChild().getLastDescendant();
   }
 
   getLastChild() {
-    if (this.children.length === 0) {
-      return this;
-    }
-    return this.children[this.children.length - 1].getLastChild();
+    return this.children[this.children.length - 1];
   }
 
   getParentAndIdx() {
