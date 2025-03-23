@@ -26,7 +26,7 @@ export default class Block {
     }
 
     // case 2: the current block has no children
-    //   Go up the tree until we find a parent that has a closest older sibling
+    //   Go up the tree until we find a parent that has a closest next sibling
     let current = this;
     while (current?.parent) {
       const [parent, currentIdx] = current.getParentAndIdx();
@@ -34,7 +34,7 @@ export default class Block {
         console.debug("no parent at getNextBlock");
         return null;
       }
-      // if a closest older sibling exists
+      // if a closest next sibling exists
       if (currentIdx < parent.children.length - 1) {
         return parent.children[currentIdx + 1];
       }
@@ -57,8 +57,8 @@ export default class Block {
     if (currentIdx === 0) {
       return parent;
     }
-    const closestOlderSibling = parent.children[currentIdx - 1];
-    return closestOlderSibling.getLastDescendant();
+    const closestPreviousSibling = parent.children[currentIdx - 1];
+    return closestPreviousSibling.getLastDescendant();
   }
 
   /**
