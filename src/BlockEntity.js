@@ -13,15 +13,20 @@ export default class Block {
     return this;
   }
 
+  /**
+   * Retrieve the next block in a pre-order depth-first tree traversal.
+   *
+   * cf. Tree traversal - Wikipedia https://en.wikipedia.org/wiki/Tree_traversal
+   */
   getNextBlock() {
-    // case 1: current has children
+    // case 1: the current block has children
     //   Return the first child
     if (this.children.length > 0) {
       return this.children[0];
     }
 
-    // case 2: current has no children
-    //   Go up the tree until we find a parent that has a next sibling
+    // case 2: the current block has no children
+    //   Go up the tree until we find a parent that has a closest next sibling
     let current = this;
     while (current?.parent) {
       const [parent, currentIdx] = current.getParentAndIdx();
@@ -29,6 +34,7 @@ export default class Block {
         console.debug("no parent at getNextBlock");
         return null;
       }
+      // if a closest next sibling exists
       if (currentIdx < parent.children.length - 1) {
         return parent.children[currentIdx + 1];
       }
@@ -38,31 +44,40 @@ export default class Block {
     return null;
   }
 
+  /**
+   * Retrieve the previous block in a pre-order depth-first tree traversal.
+   *
+   * cf. Tree traversal - Wikipedia https://en.wikipedia.org/wiki/Tree_traversal
+   */
   getPrevBlock() {
-    const [parent, idx] = this.getParentAndIdx();
+    const [parent, currentIdx] = this.getParentAndIdx();
     if (!parent) {
       return null;
     }
-    if (idx === 0) {
+    if (currentIdx === 0) {
       return parent;
     }
-    return this.parent.children[idx - 1].getLastChild();
+    const closestPreviousSibling = parent.children[currentIdx - 1];
+    return closestPreviousSibling.getLastDescendant();
   }
 
-  getFirstChild() {
+  /**
+   * Returns the last descendant of the current block, including itself.
+   */
+  getLastDescendant() {
     if (this.children.length === 0) {
       return this;
     }
-    return this.children[0];
+    return this.getLastChild().getLastDescendant();
   }
 
   getLastChild() {
-    if (this.children.length === 0) {
-      return this;
-    }
-    return this.children[this.children.length - 1].getLastChild();
+    return this.children[this.children.length - 1];
   }
 
+  /**
+   * Retrieve the parent block and the index of the current block in the parent's children array.
+   */
   getParentAndIdx() {
     if (!this?.parent?.children) {
       console.error("Block has no parent or parent has no children.");
@@ -90,8 +105,12 @@ export default class Block {
     return this;
   }
 
-  // NOTE: This function has a time complexity: O(the number of descendant blocks)
-  // This is acceptable because the number of descendant blocks is expected to be small (< 1000)
+  /**
+   * Retrieve its descendant block by its id.
+   *
+   * NOTE: This function has a time complexity: O(the number of descendant blocks).
+   * This is acceptable because the number of descendant blocks is expected to be small (< 1000)
+   */
   getBlockById(id) {
     if (this.id === id) {
       return this;
