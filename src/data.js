@@ -23,7 +23,7 @@ const initialPage = new Block("", [
         ),
         new Block("The cursor will move to the new block"),
       ]),
-      new Block("shift+enter: TODO"),
+      new Block("shift+enter: insert a newline"),
       new Block("arrow up/down: move to the previous/next block", [
         new Block("It preserves the cursor position"),
       ]),
