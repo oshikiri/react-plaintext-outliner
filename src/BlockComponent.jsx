@@ -5,22 +5,28 @@ import BlockEntity from "./BlockEntity";
 import { indent, outdent } from "./edit";
 
 export default function BlockComponent({ block }) {
-  const editingBlockId = useStore((state) => state.editingBlockId);
-  const setEditingBlockId = useStore((state) => state.setEditingBlockId);
+  const cursorPosition = useStore((state) => state.cursorPosition);
+  const setCursorPosition = useStore((state) => state.setCursorPosition);
   const createNextBlock = useStore((state) => state.createNextBlock);
   const setBlockById = useStore((state) => state.setBlockById);
 
   const contentRef = useRef(null);
 
-  const isEditing = block.id === editingBlockId;
+  const isEditing = block.id === cursorPosition?.blockId;
   useEffect(() => {
     if (isEditing) {
       contentRef.current.focus();
+
+      const offset = getOffset(contentRef.current, cursorPosition.startOffset);
+      const textNode = contentRef.current.childNodes[0];
+      if (textNode) {
+        setCursor(textNode, offset);
+      }
     }
   }, [isEditing]);
 
   const onBlur = () => {
-    setEditingBlockId(null);
+    setCursorPosition(null);
     block.content = contentRef.current?.innerText;
     setBlockById(block.id, block);
   };
@@ -30,7 +36,7 @@ export default function BlockComponent({ block }) {
       event.preventDefault();
       const { beforeCursor, afterCursor } = getTextsAroundCursor();
       const newBlock = createNextBlock(block.id, beforeCursor, afterCursor);
-      setEditingBlockId(newBlock.id);
+      setCursorPosition(newBlock.id, 0);
     } else if (event.key === "Tab") {
       event.preventDefault();
       block.content = contentRef.current?.innerText || "";
@@ -48,13 +54,18 @@ export default function BlockComponent({ block }) {
         const parent = indent(block);
         setBlockById(parent.id, parent);
       }
+
+      const { startOffset } = getTextsAroundCursor();
+      setCursorPosition(block.id, startOffset);
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       const nextBlock = block.getNextBlock();
       if (nextBlock) {
         block.content = contentRef.current?.innerText || "";
         setBlockById(block.id, block);
-        setEditingBlockId(nextBlock.id);
+
+        const { startOffset } = getTextsAroundCursor();
+        setCursorPosition(nextBlock.id, startOffset);
       }
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
@@ -62,13 +73,15 @@ export default function BlockComponent({ block }) {
       if (prevBlock) {
         block.content = contentRef.current?.innerText || "";
         setBlockById(block.id, block);
-        setEditingBlockId(prevBlock.id);
+
+        const { startOffset } = getTextsAroundCursor();
+        setCursorPosition(prevBlock.id, startOffset);
       }
     }
   };
 
   const onClick = (event) => {
-    setEditingBlockId(block.id);
+    setCursorPosition(block.id);
     event.stopPropagation();
     return;
   };
@@ -118,7 +131,25 @@ function getTextsAroundCursor() {
   const text = range.startContainer.textContent;
   const beforeCursor = text.substring(0, range.startOffset);
   const afterCursor = text.substring(range.endOffset);
-  return { beforeCursor, afterCursor };
+  return { beforeCursor, afterCursor, startOffset: range.startOffset };
+}
+
+function getOffset(node, startOffset) {
+  const nextInnerText = node.innerText || "";
+  if (startOffset >= nextInnerText.length) {
+    return nextInnerText.length;
+  }
+  return startOffset;
+}
+
+function setCursor(node, offset) {
+  const range = document.createRange();
+  range.setStart(node, offset);
+  range.setEnd(node, offset);
+
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 export { createNext };

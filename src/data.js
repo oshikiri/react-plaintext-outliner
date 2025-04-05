@@ -24,8 +24,9 @@ const initialPage = new Block("", [
         new Block("The cursor will move to the new block"),
       ]),
       new Block("shift+enter: TODO"),
-      new Block("arrow up: move to the previous block"),
-      new Block("arrow down: move to the next block"),
+      new Block("arrow up/down: move to the previous/next block", [
+        new Block("It preserves the cursor position"),
+      ]),
       new Block("ctrl+k: clear the localStorage"),
     ]),
   ]),
