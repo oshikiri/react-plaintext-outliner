@@ -96,7 +96,7 @@ export default function BlockComponent({ block }) {
   return (
     <div key={block.id}>
       <div
-        className="before:content-['・'] mr-5"
+        className="before:content-['・'] mr-5 whitespace-pre-wrap"
         key={block.id + "-content"}
         ref={contentRef}
         contentEditable={isEditing || undefined}
