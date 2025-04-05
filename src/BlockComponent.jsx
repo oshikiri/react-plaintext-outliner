@@ -3,7 +3,12 @@ import { useRef, useEffect } from "react";
 import { useStore } from "./state";
 import BlockEntity from "./BlockEntity";
 import { indent, outdent } from "./edit";
-import { getOffset, setCursor, getTextsAroundCursor } from "./dom";
+import {
+  getOffset,
+  setCursor,
+  getTextsAroundCursor,
+  getNearestCursorOffset,
+} from "./dom";
 
 export default function BlockComponent({ block }) {
   const cursorPosition = useStore((state) => state.cursorPosition);
@@ -82,7 +87,8 @@ export default function BlockComponent({ block }) {
   };
 
   const onClick = (event) => {
-    setCursorPosition(block.id);
+    const startOffset = getNearestCursorOffset(event.clientX, event.clientY);
+    setCursorPosition(block.id, startOffset);
     event.stopPropagation();
     return;
   };

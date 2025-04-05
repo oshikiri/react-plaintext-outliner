@@ -25,4 +25,9 @@ function setCursor(node, offset) {
   selection.addRange(range);
 }
 
-export { getOffset, setCursor, getTextsAroundCursor };
+function getNearestCursorOffset(x, y) {
+  const caretPosition = document.caretPositionFromPoint(x, y);
+  return caretPosition.offset;
+}
+
+export { getOffset, setCursor, getTextsAroundCursor, getNearestCursorOffset };
