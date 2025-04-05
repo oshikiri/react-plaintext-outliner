@@ -27,6 +27,8 @@ const initialPage = new Block("", [
       new Block("arrow up/down: move to the previous/next block", [
         new Block("It preserves the cursor position"),
       ]),
+      new Block("ctrl+a: move cursor to the beginning of the line"),
+      new Block("ctrl+e: move cursor to the end of the line"),
       new Block("ctrl+k: clear the localStorage"),
     ]),
   ]),
