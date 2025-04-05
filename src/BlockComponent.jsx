@@ -29,7 +29,7 @@ export default function BlockComponent({ block }) {
         setCursor(textNode, offset);
       }
     }
-  }, [isEditing]);
+  }, [cursorPosition]);
 
   const onBlur = () => {
     setCursorPosition(null);
@@ -83,6 +83,13 @@ export default function BlockComponent({ block }) {
         const { startOffset } = getTextsAroundCursor();
         setCursorPosition(prevBlock.id, startOffset);
       }
+    } else if (event.key === "a" && event.ctrlKey) {
+      event.preventDefault();
+      setCursorPosition(block.id, 0);
+    } else if (event.key === "e" && event.ctrlKey) {
+      event.preventDefault();
+      const endPosition = contentRef.current?.innerText.length || 0;
+      setCursorPosition(block.id, endPosition);
     }
   };
 
