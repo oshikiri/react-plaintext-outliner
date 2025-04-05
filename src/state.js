@@ -22,8 +22,9 @@ export const useStore = create((set, get) => ({
     get().setBlockById(newBlock.id, newBlock);
     return newBlock;
   },
-  editingBlockId: null,
-  setEditingBlockId: (id) => set({ editingBlockId: id }),
+  cursorPosition: null,
+  setCursorPosition: (blockId, startOffset) =>
+    set({ cursorPosition: { blockId, startOffset } }),
 }));
 
 export function setToLocalStorage(rootBlock) {
