@@ -24,8 +24,19 @@ const initialPage = new Block("", [
         new Block("The cursor will move to the new block"),
       ]),
       new Block("shift+enter: insert a newline"),
-      new Block("arrow up/down: move to the previous/next block", [
-        new Block("It preserves the cursor position"),
+      new Block("arrow up/down: move to the previous/next visual line", [
+        new Block(
+          '"The next visual line" is the line that appears immediately below the current line as displayed on the screen, taking into account text wrapping. ',
+          [
+            new Block(
+              "If the current line is the last visual line of the block, go to the first line of the next block.",
+            ),
+            new Block(
+              "Otherwise, go to the next visual line of the current block.",
+            ),
+          ],
+        ),
+        new Block("And it preserves the cursor position"),
       ]),
       new Block("ctrl+a: move cursor to the beginning of the line"),
       new Block("ctrl+e: move cursor to the end of the line"),
