@@ -1,4 +1,6 @@
-function indent(block) {
+import BlockEntity from "./BlockEntity";
+
+function indent(block: BlockEntity) {
   const [parent, currentIdx] = block.getParentAndIdx();
   if (!parent || currentIdx === -1) {
     console.log("Block has no parent:", block);
@@ -25,7 +27,7 @@ function indent(block) {
   return parent;
 }
 
-function outdent(block) {
+function outdent(block: BlockEntity) {
   const [parent, currentIdx] = block.getParentAndIdx();
   if (!parent || currentIdx === -1) {
     console.log("Block has no parent:", block);

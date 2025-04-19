@@ -1,4 +1,10 @@
-import { useRef, useEffect } from "react";
+import {
+  useRef,
+  useEffect,
+  JSX,
+  MouseEventHandler,
+  KeyboardEventHandler,
+} from "react";
 
 import { useStore } from "./state";
 import BlockEntity from "./BlockEntity";
@@ -10,21 +16,25 @@ import {
   getNearestCursorOffset,
 } from "./dom";
 
-export default function BlockComponent({ block }) {
-  const cursorPosition = useStore((state) => state.cursorPosition);
-  const setCursorPosition = useStore((state) => state.setCursorPosition);
-  const createNextBlock = useStore((state) => state.createNextBlock);
-  const setBlockById = useStore((state) => state.setBlockById);
+export default function BlockComponent({
+  block,
+}: {
+  block: BlockEntity;
+}): JSX.Element {
+  const cursorPosition = useStore((state: any) => state.cursorPosition);
+  const setCursorPosition = useStore((state: any) => state.setCursorPosition);
+  const createNextBlock = useStore((state: any) => state.createNextBlock);
+  const setBlockById = useStore((state: any) => state.setBlockById);
 
-  const contentRef = useRef(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const isEditing = block.id === cursorPosition?.blockId;
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && contentRef.current) {
       contentRef.current.focus();
 
       const offset = getOffset(contentRef.current, cursorPosition.startOffset);
-      const textNode = contentRef.current.childNodes[0];
+      const textNode = contentRef.current.childNodes[0] as HTMLElement;
       if (textNode) {
         setCursor(textNode, offset);
       }
@@ -33,11 +43,13 @@ export default function BlockComponent({ block }) {
 
   const onBlur = () => {
     setCursorPosition(null);
-    block.content = contentRef.current?.innerText;
+    block.content = contentRef.current?.innerText || "";
     setBlockById(block.id, block);
   };
 
-  const onKeyDown = (event) => {
+  const onKeyDown: KeyboardEventHandler = (event) => {
+    const currentInnerText: string = contentRef.current?.innerText || "";
+
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       const { beforeCursor, afterCursor } = getTextsAroundCursor();
@@ -45,7 +57,7 @@ export default function BlockComponent({ block }) {
       setCursorPosition(newBlock.id, 0);
     } else if (event.key === "Tab") {
       event.preventDefault();
-      block.content = contentRef.current?.innerText || "";
+      block.content = currentInnerText;
       setBlockById(block.id, block);
 
       if (event.shiftKey) {
@@ -58,7 +70,9 @@ export default function BlockComponent({ block }) {
         }
       } else {
         const parent = indent(block);
-        setBlockById(parent.id, parent);
+        if (parent) {
+          setBlockById(parent.id, parent);
+        }
       }
 
       const { startOffset } = getTextsAroundCursor();
@@ -67,7 +81,7 @@ export default function BlockComponent({ block }) {
       event.preventDefault();
       const nextBlock = block.getNextBlock();
       if (nextBlock) {
-        block.content = contentRef.current?.innerText || "";
+        block.content = currentInnerText;
         setBlockById(block.id, block);
 
         const { startOffset } = getTextsAroundCursor();
@@ -77,7 +91,7 @@ export default function BlockComponent({ block }) {
       event.preventDefault();
       const prevBlock = block.getPrevBlock();
       if (prevBlock) {
-        block.content = contentRef.current?.innerText || "";
+        block.content = currentInnerText;
         setBlockById(block.id, block);
 
         const { startOffset } = getTextsAroundCursor();
@@ -88,12 +102,11 @@ export default function BlockComponent({ block }) {
       setCursorPosition(block.id, 0);
     } else if (event.key === "e" && event.ctrlKey) {
       event.preventDefault();
-      const endPosition = contentRef.current?.innerText.length || 0;
-      setCursorPosition(block.id, endPosition);
+      setCursorPosition(block.id, currentInnerText.length);
     }
   };
 
-  const onClick = (event) => {
+  const onClick: MouseEventHandler = (event) => {
     const startOffset = getNearestCursorOffset(event.clientX, event.clientY);
     setCursorPosition(block.id, startOffset);
     event.stopPropagation();
@@ -123,7 +136,11 @@ export default function BlockComponent({ block }) {
   );
 }
 
-function createNext(block, beforeCursor, afterCursor) {
+function createNext(
+  block: BlockEntity,
+  beforeCursor: string,
+  afterCursor: string,
+) {
   console.log("createNext", { beforeCursor, afterCursor });
   block.content = beforeCursor;
 
@@ -135,7 +152,7 @@ function createNext(block, beforeCursor, afterCursor) {
 
   const newBlock = new BlockEntity(afterCursor, []).withParent(block.parent);
   const [_parent, idx] = block.getParentAndIdx();
-  block.parent.children.splice(idx + 1, 0, newBlock);
+  block.parent?.children.splice(idx + 1, 0, newBlock);
   return { block, newBlock };
 }
 

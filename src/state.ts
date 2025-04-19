@@ -1,33 +1,34 @@
 import { create } from "zustand";
 
 import { createNext } from "./BlockComponent";
-import { createBlock } from "./BlockEntity";
+import BlockEntity, { createBlock } from "./BlockEntity";
 import { initialPage } from "./data";
 
 const rootBlockKey = "rootBlock";
-const rootBlock = JSON.parse(localStorage.getItem(rootBlockKey)) || initialPage;
+const rootBlock =
+  JSON.parse(localStorage.getItem(rootBlockKey) || "{}") || initialPage;
 
-export const useStore = create((set, get) => ({
+export const useStore = create((set, get: any) => ({
   rootBlock: createBlock(rootBlock),
-  setRootBlock: (block) => set({ rootBlock: block }),
-  getBlockById: (id) => get().rootBlock.getBlockById(id),
-  setBlockById: (id, block) => {
+  setRootBlock: (block: BlockEntity) => set({ rootBlock: block }),
+  getBlockById: (id: string) => get().rootBlock.getBlockById(id),
+  setBlockById: (id: string, block: BlockEntity) => {
     const root = createBlock(get().rootBlock);
     const updatedRoot = root.updateBlockById(id, block);
     set({ rootBlock: createBlock(updatedRoot) });
   },
-  createNextBlock: (id, beforeCursor, afterCursor) => {
+  createNextBlock: (id: string, beforeCursor: string, afterCursor: string) => {
     const block = get().rootBlock.getBlockById(id);
     const { newBlock } = createNext(block, beforeCursor, afterCursor);
     get().setBlockById(newBlock.id, newBlock);
     return newBlock;
   },
   cursorPosition: null,
-  setCursorPosition: (blockId, startOffset) =>
+  setCursorPosition: (blockId: string, startOffset: number) =>
     set({ cursorPosition: { blockId, startOffset } }),
 }));
 
-export function setToLocalStorage(rootBlock) {
+export function setToLocalStorage(rootBlock: BlockEntity) {
   localStorage.setItem(rootBlockKey, JSON.stringify(rootBlock.toJson()));
 }
 export function clearLocalStorage() {

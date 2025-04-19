@@ -1,14 +1,17 @@
 export default class Block {
-  parent = null;
-  id = crypto.randomUUID();
+  parent: Block | null = null;
+  id: string = crypto.randomUUID();
 
-  constructor(content, children = []) {
+  constructor(
+    public content: string,
+    public children: Block[] = [],
+  ) {
     this.content = content;
     children.forEach((child) => child.withParent(this));
     this.children = children;
   }
 
-  withParent(parent) {
+  withParent(parent: Block | null) {
     this.parent = parent;
     return this;
   }
@@ -27,9 +30,9 @@ export default class Block {
 
     // case 2: the current block has no children
     //   Go up the tree until we find a parent that has a closest next sibling
-    let current = this;
+    let current: Block | null = this;
     while (current?.parent) {
-      const [parent, currentIdx] = current.getParentAndIdx();
+      const [parent, currentIdx]: any = current.getParentAndIdx();
       if (!parent || currentIdx === -1) {
         console.debug("no parent at getNextBlock");
         return null;
@@ -64,7 +67,7 @@ export default class Block {
   /**
    * Returns the last descendant of the current block, including itself.
    */
-  getLastDescendant() {
+  getLastDescendant(): Block {
     if (this.children.length === 0) {
       return this;
     }
@@ -78,7 +81,7 @@ export default class Block {
   /**
    * Retrieve the parent block and the index of the current block in the parent's children array.
    */
-  getParentAndIdx() {
+  getParentAndIdx(): [Block | null, number] {
     if (!this?.parent?.children) {
       console.error("Block has no parent or parent has no children.");
       return [null, -1];
@@ -88,7 +91,7 @@ export default class Block {
     return [this.parent, idx];
   }
 
-  updateBlockById(id, updatedBlock) {
+  updateBlockById(id: string, updatedBlock: Block): Block {
     if (this.id === id) {
       return updatedBlock;
     }
@@ -111,7 +114,7 @@ export default class Block {
    * NOTE: This function has a time complexity: O(the number of descendant blocks).
    * This is acceptable because the number of descendant blocks is expected to be small (< 1000)
    */
-  getBlockById(id) {
+  getBlockById(id: string): Block | null {
     if (this.id === id) {
       return this;
     }
@@ -126,7 +129,7 @@ export default class Block {
     return null;
   }
 
-  toJson() {
+  toJson(): any {
     return {
       id: this.id,
       content: this.content,
@@ -138,7 +141,7 @@ export default class Block {
   }
 }
 
-function createBlock(obj) {
+function createBlock(obj: any): Block {
   const children = obj.children?.map(createBlock) || [];
   const block = new Block(obj.content, children).withParent(obj.parent);
   block.id = obj.id;

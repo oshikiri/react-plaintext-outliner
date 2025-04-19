@@ -1,8 +1,10 @@
+import { JSX } from "react";
+import BlockEntity from "./BlockEntity";
 import BlockComponent from "./BlockComponent";
 import { useStore, setToLocalStorage, clearLocalStorage } from "./state";
 
-export default function Root() {
-  const rootBlock = useStore((state) => state.rootBlock);
+export default function Root(): JSX.Element {
+  const rootBlock = useStore((state: any) => state.rootBlock);
   setToLocalStorage(rootBlock);
 
   return (
@@ -12,7 +14,7 @@ export default function Root() {
         landscape:flex-row"
     >
       <Pane key="editor">
-        {rootBlock.children.map((block, i) => (
+        {rootBlock.children.map((block: BlockEntity, i: number) => (
           <BlockComponent key={`${block.id}/${i}`} block={block} />
         ))}
       </Pane>
@@ -25,7 +27,7 @@ export default function Root() {
   );
 }
 
-function Pane({ children }) {
+function Pane({ children }: { children: JSX.Element }) {
   return (
     <div
       className="border border-gray-300
