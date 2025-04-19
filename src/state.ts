@@ -5,8 +5,10 @@ import BlockEntity, { createBlock } from "./BlockEntity";
 import { initialPage } from "./data";
 
 const rootBlockKey = "rootBlock";
-const rootBlock =
-  JSON.parse(localStorage.getItem(rootBlockKey) || "{}") || initialPage;
+const rootBlockFromLocalStorage = localStorage.getItem(rootBlockKey);
+const rootBlock = rootBlockFromLocalStorage
+  ? JSON.parse(rootBlockFromLocalStorage)
+  : initialPage;
 
 export const useStore = create((set, get: any) => ({
   rootBlock: createBlock(rootBlock),
