@@ -15,11 +15,14 @@
   "license": "ISC",
   "devDependencies": {
     "@tailwindcss/vite": "4.0.14",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "4.3.4",
     "prettier": "3.5.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "tailwindcss": "4.0.14",
+    "typescript": "^5.8.3",
     "vite": "6.3.1",
     "zustand": "5.0.3"
   },
