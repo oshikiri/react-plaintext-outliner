@@ -14,6 +14,9 @@ import {
   setCursor,
   getTextsAroundCursor,
   getNearestCursorOffset,
+  isCaretAtLastLine,
+  isCaretAtFirstLine,
+  getOffsetFromLineStart,
 } from "./dom";
 
 export default function BlockComponent({
@@ -48,7 +51,8 @@ export default function BlockComponent({
   };
 
   const onKeyDown: KeyboardEventHandler = (event) => {
-    const currentInnerText: string = contentRef.current?.innerText || "";
+    const currentElement = contentRef.current;
+    const currentInnerText: string = currentElement?.innerText || "";
 
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -78,24 +82,32 @@ export default function BlockComponent({
       const { startOffset } = getTextsAroundCursor();
       setCursorPosition(block.id, startOffset);
     } else if (event.key === "ArrowDown") {
+      if (!currentElement || !isCaretAtLastLine(currentElement)) {
+        return;
+      }
+
       event.preventDefault();
       const nextBlock = block.getNextBlock();
       if (nextBlock) {
         block.content = currentInnerText;
         setBlockById(block.id, block);
 
-        const { startOffset } = getTextsAroundCursor();
-        setCursorPosition(nextBlock.id, startOffset);
+        const offsetFromLineStart = getOffsetFromLineStart(currentElement);
+        setCursorPosition(nextBlock.id, offsetFromLineStart);
       }
     } else if (event.key === "ArrowUp") {
+      if (!currentElement || !isCaretAtFirstLine(currentElement)) {
+        return;
+      }
+
       event.preventDefault();
       const prevBlock = block.getPrevBlock();
       if (prevBlock) {
         block.content = currentInnerText;
         setBlockById(block.id, block);
 
-        const { startOffset } = getTextsAroundCursor();
-        setCursorPosition(prevBlock.id, startOffset);
+        const offsetFromLineStart = getOffsetFromLineStart(currentElement);
+        setCursorPosition(prevBlock.id, offsetFromLineStart);
       }
     } else if (event.key === "a" && event.ctrlKey) {
       event.preventDefault();
