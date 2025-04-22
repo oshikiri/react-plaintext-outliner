@@ -114,23 +114,27 @@ export default function BlockComponent({
   };
 
   return (
-    <div key={block.id}>
-      <div
-        className="before:content-['・'] mr-5 whitespace-pre-wrap"
-        key={block.id + "-content"}
-        ref={contentRef}
-        contentEditable={isEditing || undefined}
-        suppressContentEditableWarning={isEditing || undefined}
-        onClick={onClick}
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-      >
-        {block.content}
-      </div>
-      <div className="ml-20" key={block.id + "-children"}>
-        {block.children?.map((child) => (
-          <BlockComponent key={child.id} block={child} />
-        ))}
+    <div key={block.id} className="flex">
+      <div>・</div>
+      <div>
+        <div
+          // Set px-2 for visibility when the cursor is at the beginning of the line.
+          className="w-full whitespace-pre-wrap break-all px-2"
+          key={block.id + "-content"}
+          ref={contentRef}
+          contentEditable={isEditing || undefined}
+          suppressContentEditableWarning={isEditing || undefined}
+          onClick={onClick}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+        >
+          {block.content}
+        </div>
+        <div className="ml-20" key={block.id + "-children"}>
+          {block.children?.map((child) => (
+            <BlockComponent key={child.id} block={child} />
+          ))}
+        </div>
       </div>
     </div>
   );
