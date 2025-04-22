@@ -19,7 +19,7 @@ export default function Root(): JSX.Element {
         ))}
       </Pane>
       <Pane key="json">
-        <pre className="text-xs">
+        <pre className="text-xs whitespace-pre-wrap break-all">
           {JSON.stringify(rootBlock.toJson(), null, 2)}
         </pre>
       </Pane>
