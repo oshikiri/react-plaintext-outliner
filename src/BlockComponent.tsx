@@ -128,10 +128,10 @@ export default function BlockComponent({
   return (
     <div key={block.id} className="flex">
       <div>・</div>
-      <div>
+      <div className="flex-grow">
         <div
           // Set px-2 for visibility when the cursor is at the beginning of the line.
-          className="w-full whitespace-pre-wrap break-all px-2"
+          className="w-full whitespace-pre-wrap break-all px-2 empty:after:content-['\00a0']"
           key={block.id + "-content"}
           ref={contentRef}
           contentEditable={isEditing || undefined}
