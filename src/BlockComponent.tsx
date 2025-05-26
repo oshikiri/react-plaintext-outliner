@@ -17,6 +17,7 @@ import {
   isCaretAtLastLine,
   isCaretAtFirstLine,
   getOffsetFromLineStart,
+  getCursorPositionInBlock,
 } from "./dom";
 
 export default function BlockComponent({
@@ -82,7 +83,7 @@ export default function BlockComponent({
       const { startOffset } = getTextsAroundCursor();
       setCursorPosition(block.id, startOffset);
     } else if (event.key === "ArrowDown") {
-      if (!currentElement || !isCaretAtLastLine(currentElement)) {
+      if (!currentElement || !isCaretAtLastLine()) {
         return;
       }
 
@@ -96,7 +97,7 @@ export default function BlockComponent({
         setCursorPosition(nextBlock.id, offsetFromLineStart);
       }
     } else if (event.key === "ArrowUp") {
-      if (!currentElement || !isCaretAtFirstLine(currentElement)) {
+      if (!currentElement || !isCaretAtFirstLine()) {
         return;
       }
 
@@ -111,10 +112,30 @@ export default function BlockComponent({
       }
     } else if (event.key === "a" && event.ctrlKey) {
       event.preventDefault();
-      setCursorPosition(block.id, 0);
+
+      const pos = getCursorPositionInBlock(window.getSelection());
+      const newlineBeforeCaret = pos?.newlines?.findLast((newline) => {
+        return newline.index < pos.anchorOffset;
+      });
+      if (newlineBeforeCaret) {
+        const newlineIndex = newlineBeforeCaret.index;
+        setCursorPosition(block.id, newlineIndex + 1);
+      } else {
+        setCursorPosition(block.id, 0);
+      }
     } else if (event.key === "e" && event.ctrlKey) {
       event.preventDefault();
-      setCursorPosition(block.id, currentInnerText.length);
+
+      const pos = getCursorPositionInBlock(window.getSelection());
+      const newlineAfterCaret = pos?.newlines?.find((newline) => {
+        return newline.index >= pos.anchorOffset;
+      });
+      if (newlineAfterCaret) {
+        const newlineIndex = newlineAfterCaret.index;
+        setCursorPosition(block.id, newlineIndex);
+      } else {
+        setCursorPosition(block.id, currentInnerText.length);
+      }
     }
   };
 
