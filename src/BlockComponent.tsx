@@ -114,7 +114,7 @@ export default function BlockComponent({
       event.preventDefault();
 
       const pos = getCursorPositionInBlock(window.getSelection());
-      const newlineBeforeCaret = pos?.newlines?.find((newline) => {
+      const newlineBeforeCaret = pos?.newlines?.findLast((newline) => {
         return newline.index < pos.anchorOffset;
       });
       if (newlineBeforeCaret) {

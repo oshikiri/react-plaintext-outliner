@@ -26,7 +26,7 @@ export function isCaretAtLastLine(): boolean {
   }
 
   const pos = getCursorPositionInBlock(selection);
-  const isAtBottom = pos?.newlines?.every((newline) => {
+  const isAtBottom = pos?.newlines?.every?.((newline) => {
     return newline.index + 1 < pos.anchorOffset;
   });
   if (isAtBottom === undefined) {
@@ -42,7 +42,7 @@ export function isCaretAtFirstLine(): boolean {
   }
 
   const pos = getCursorPositionInBlock(selection);
-  const isAtTop = pos?.newlines?.every((newline) => {
+  const isAtTop = pos?.newlines?.every?.((newline) => {
     return pos.anchorOffset <= newline.index;
   });
 
