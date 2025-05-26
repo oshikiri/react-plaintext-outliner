@@ -19,52 +19,47 @@ function getOffset(node: HTMLElement, startOffset: number) {
   return startOffset;
 }
 
-export function isCaretAtLastLine(element: HTMLElement): boolean {
+export function isCaretAtLastLine(): boolean {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) {
     return false;
   }
 
-  const range = selection.getRangeAt(0);
-
-  const clientRects = range.getClientRects();
-  if (clientRects.length === 0) {
+  const pos = getCursorPositionInBlock(selection);
+  const isAtBottom = pos?.newlines?.every((newline) => {
+    return newline.index + 1 < pos.anchorOffset;
+  });
+  if (isAtBottom === undefined) {
     return true;
   }
-
-  const lastRect = clientRects[clientRects.length - 1];
-  const elementRect = element.getBoundingClientRect();
-
-  const tolerance = 5;
-  const isAtBottom =
-    lastRect.bottom >= elementRect.bottom - tolerance &&
-    lastRect.top <= elementRect.bottom + tolerance;
-
   return isAtBottom;
 }
 
-export function isCaretAtFirstLine(element: HTMLElement): boolean {
+export function isCaretAtFirstLine(): boolean {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) {
     return false;
   }
 
-  const range = selection.getRangeAt(0);
+  const pos = getCursorPositionInBlock(selection);
+  const isAtTop = pos?.newlines?.every((newline) => {
+    return pos.anchorOffset <= newline.index;
+  });
 
-  const clientRects = range.getClientRects();
-  if (clientRects.length === 0) {
+  if (isAtTop === undefined) {
     return true;
   }
-
-  const firstRect = clientRects[0];
-  const elementRect = element.getBoundingClientRect();
-
-  const tolerance = 5;
-  const isAtTop =
-    firstRect.top <= elementRect.top + tolerance &&
-    firstRect.bottom >= elementRect.top - tolerance;
-
   return isAtTop;
+}
+
+export function getCursorPositionInBlock(selection: Selection | null) {
+  if (!selection) return {};
+
+  const text: Text = selection.anchorNode as Text;
+  const wholeText = text.wholeText || "";
+  const anchorOffset = selection.anchorOffset;
+  const newlines = Array.from(wholeText.matchAll(/\n/g));
+  return { newlines, wholeText, anchorOffset };
 }
 
 /**
