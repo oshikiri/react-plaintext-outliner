@@ -1,3 +1,5 @@
+import { getNewlineRangeset } from "./Range";
+
 function getTextsAroundCursor() {
   const selection: Selection | null = window.getSelection();
   if (!selection) {
@@ -19,20 +21,22 @@ function getOffset(node: HTMLElement, startOffset: number) {
   return startOffset;
 }
 
-export function isCaretAtLastLine(): boolean {
+export function isCaretAtLastLine(content: string): boolean {
+  if (content.length === 0) {
+    return true;
+  }
+
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) {
     return false;
   }
+  const caretOffset = selection.anchorOffset;
 
-  const pos = getCursorPositionInBlock(selection);
-  const isAtBottom = pos?.newlines?.every?.((newline) => {
-    return newline.index + 1 < pos.anchorOffset;
-  });
-  if (isAtBottom === undefined) {
-    return true;
+  const lastlineRange = getNewlineRangeset(content).getLastRange();
+  if (!lastlineRange) {
+    return false;
   }
-  return isAtBottom;
+  return lastlineRange.contains(caretOffset);
 }
 
 export function isCaretAtFirstLine(): boolean {
@@ -65,7 +69,7 @@ export function getCursorPositionInBlock(selection: Selection | null) {
 /**
  * Get the offset of the cursor from the start of the line in a div.
  *
- * It considers the case where there are multiple lines due to text wrapping.
+ * TODO: considers the case where there are multiple lines due to text wrapping.
  */
 export function getOffsetFromLineStart(element: HTMLElement): number {
   const selection: Selection | null = window.getSelection();
@@ -74,20 +78,7 @@ export function getOffsetFromLineStart(element: HTMLElement): number {
   }
 
   const range = selection.getRangeAt(0);
-
-  const clientRects = range.getClientRects();
-  if (clientRects.length === 0) {
-    return 0;
-  }
-
-  const caretRect = clientRects[clientRects.length - 1];
-
-  const elementRect = element.getBoundingClientRect();
-
-  const caretX = caretRect.left - elementRect.left;
-
-  // FIXME: Assuming 8px is the width of a character
-  return Math.floor(caretX / 8);
+  return range.startOffset;
 }
 
 function setCursor(node: HTMLElement, offset: number) {

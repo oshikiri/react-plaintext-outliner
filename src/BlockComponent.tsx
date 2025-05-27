@@ -19,6 +19,7 @@ import {
   getOffsetFromLineStart,
   getCursorPositionInBlock,
 } from "./dom";
+import { getNewlineRangeset } from "./Range";
 
 export default function BlockComponent({
   block,
@@ -83,33 +84,49 @@ export default function BlockComponent({
       const { startOffset } = getTextsAroundCursor();
       setCursorPosition(block.id, startOffset);
     } else if (event.key === "ArrowDown") {
-      if (!currentElement || !isCaretAtLastLine()) {
+      if (!currentElement || !isCaretAtLastLine(block.content)) {
         return;
       }
 
       event.preventDefault();
       const nextBlock = block.getNextBlock();
-      if (nextBlock) {
-        block.content = currentInnerText;
-        setBlockById(block.id, block);
-
-        const offsetFromLineStart = getOffsetFromLineStart(currentElement);
-        setCursorPosition(nextBlock.id, offsetFromLineStart);
+      if (!nextBlock) {
+        return;
       }
+
+      // Save the current block's content before moving.
+      block.content = currentInnerText;
+      setBlockById(block.id, block);
+
+      const caretOffset = getOffsetFromLineStart(currentElement);
+      const lastRange = getNewlineRangeset(block.content).getLastRange();
+      const nextCaretOffset = lastRange
+        ? Math.max(0, caretOffset - lastRange.l - 1)
+        : 0;
+      setCursorPosition(nextBlock.id, nextCaretOffset);
     } else if (event.key === "ArrowUp") {
+      // If the caret is not at the first line, do nothing
       if (!currentElement || !isCaretAtFirstLine()) {
         return;
       }
 
+      // If the caret is at the first line, move to the previous block.
       event.preventDefault();
       const prevBlock = block.getPrevBlock();
-      if (prevBlock) {
-        block.content = currentInnerText;
-        setBlockById(block.id, block);
-
-        const offsetFromLineStart = getOffsetFromLineStart(currentElement);
-        setCursorPosition(prevBlock.id, offsetFromLineStart);
+      if (!prevBlock) {
+        return;
       }
+
+      // If you edit the current block and then move to above, save its content.
+      block.content = currentInnerText;
+      setBlockById(block.id, block);
+
+      const offsetAtPrev = getOffsetFromLineStart(currentElement);
+      const lastRange = getNewlineRangeset(prevBlock.content).getLastRange();
+      const nextCaretOffset = lastRange
+        ? Math.min(lastRange.l + offsetAtPrev + 1, lastRange.r)
+        : 0;
+      setCursorPosition(prevBlock.id, nextCaretOffset);
     } else if (event.key === "a" && event.ctrlKey) {
       event.preventDefault();
 
