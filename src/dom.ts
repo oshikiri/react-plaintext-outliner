@@ -56,6 +56,14 @@ export function isCaretAtFirstLine(): boolean {
   return isAtTop;
 }
 
+export function caretIsAtHeadOfBlock(): boolean {
+  const selection = window.getSelection();
+  if (!selection) {
+    return true;
+  }
+  return selection.anchorOffset === 0;
+}
+
 export function getCursorPositionInBlock(selection: Selection | null) {
   if (!selection) return {};
 

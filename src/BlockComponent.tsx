@@ -19,6 +19,7 @@ import {
   getOffsetFromLineStart,
   getCursorPositionInBlock,
 } from "./dom";
+import * as dom from "./dom";
 import { getNewlineRangeset } from "./Range";
 
 export default function BlockComponent({
@@ -153,6 +154,24 @@ export default function BlockComponent({
       } else {
         setCursorPosition(block.id, currentInnerText.length);
       }
+    } else if (event.key === "Backspace") {
+      block.content = currentInnerText;
+
+      if (block.children.length > 0 || !dom.caretIsAtHeadOfBlock()) {
+        return;
+      }
+
+      const prevBlock = block.getPrevBlock();
+      if (!prevBlock) {
+        return;
+      }
+
+      event.preventDefault();
+      const prevContentLength = prevBlock.content.length;
+      prevBlock.content += block.content;
+      const [parent, idx] = block.getParentAndIdx();
+      parent?.children.splice(idx, 1);
+      setCursorPosition(prevBlock.id, prevContentLength);
     }
   };
 
