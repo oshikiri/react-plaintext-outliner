@@ -21,6 +21,7 @@ import {
 } from "./dom";
 import * as dom from "./dom";
 import { getNewlineRangeset } from "./Range";
+import * as keyboardEvent from "./block/keyboardevent";
 
 export default function BlockComponent({
   block,
@@ -128,6 +129,10 @@ export default function BlockComponent({
         ? Math.min(lastRange.l + offsetAtPrev + 1, lastRange.r)
         : 0;
       setCursorPosition(prevBlock.id, nextCaretOffset);
+    } else if (event.key === "ArrowLeft") {
+      keyboardEvent.handlerArrowLeft(event, setCursorPosition, block);
+    } else if (event.key === "ArrowRight") {
+      keyboardEvent.handlerArrowRight(event, setCursorPosition, block);
     } else if (event.key === "a" && event.ctrlKey) {
       event.preventDefault();
 
