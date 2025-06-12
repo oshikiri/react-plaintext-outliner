@@ -6,9 +6,8 @@ import {
   KeyboardEventHandler,
 } from "react";
 
-import { useStore } from "./state";
-import BlockEntity from "./BlockEntity";
-import { indent, outdent } from "./edit";
+import { useStore } from "../state";
+import BlockEntity from "../BlockEntity";
 import {
   getOffset,
   setCursor,
@@ -18,10 +17,10 @@ import {
   isCaretAtFirstLine,
   getOffsetFromLineStart,
   getCursorPositionInBlock,
-} from "./dom";
-import * as dom from "./dom";
-import { getNewlineRangeset } from "./Range";
-import * as keyboardEvent from "./block/keyboardevent";
+} from "../dom";
+import * as dom from "../dom";
+import { getNewlineRangeset } from "../Range";
+import * as keyboardEvent from "./keyboardevent";
 
 export default function BlockComponent({
   block,
@@ -69,7 +68,7 @@ export default function BlockComponent({
       setBlockById(block.id, block);
 
       if (event.shiftKey) {
-        const { parent, grandParent } = outdent(block);
+        const { parent, grandParent } = block.outdent();
         if (parent) {
           setBlockById(parent.id, parent);
         }
@@ -77,7 +76,7 @@ export default function BlockComponent({
           setBlockById(grandParent.id, grandParent);
         }
       } else {
-        const parent = indent(block);
+        const parent = block.indent();
         if (parent) {
           setBlockById(parent.id, parent);
         }
