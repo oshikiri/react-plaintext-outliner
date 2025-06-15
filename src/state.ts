@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { createNext } from "./BlockComponent";
+import { createNext } from "./block/BlockComponent";
 import BlockEntity, { createBlock } from "./BlockEntity";
 import { initialPage } from "./data";
 

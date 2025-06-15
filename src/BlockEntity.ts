@@ -129,6 +129,66 @@ export default class Block {
     return null;
   }
 
+  indent() {
+    const [parent, currentIdx] = this.getParentAndIdx();
+    if (!parent || currentIdx === -1) {
+      console.log("Block has no parent:", this);
+      return parent;
+    }
+
+    if (currentIdx === 0) {
+      console.log("Cannot indent block that is the first child of its parent.");
+      return parent;
+    }
+
+    const siblingsBefore = parent.children.slice(0, currentIdx);
+    const prevSibling = siblingsBefore[siblingsBefore.length - 1];
+    if (!prevSibling) {
+      console.log("No previous sibling to indent to.");
+      return parent;
+    }
+    this.parent = prevSibling;
+    prevSibling.children.push(this);
+
+    const siblingsAfter = parent.children.slice(currentIdx + 1);
+    parent.children = [...siblingsBefore, ...siblingsAfter];
+
+    return parent;
+  }
+
+  outdent() {
+    const [parent, currentIdx] = this.getParentAndIdx();
+    if (!parent || currentIdx === -1) {
+      console.log("Block has no parent:", this);
+      return { parent, grandParent: null };
+    }
+    if (!parent.parent) {
+      console.log("Cannot outdent block that is a child of the root.");
+      return { parent, grandParent: null };
+    }
+
+    const [grandParent, parentIdx] = parent.getParentAndIdx();
+    if (!grandParent || parentIdx === -1) {
+      console.log("Parent has no parent:", parent);
+      return { parent, grandParent };
+    }
+
+    const siblingsBefore = parent.children.slice(0, currentIdx);
+    const siblingsAfter = parent.children.slice(currentIdx + 1);
+
+    parent.children = siblingsBefore;
+    this.parent = grandParent;
+    this.children = [...this.children, ...siblingsAfter];
+    this.children.forEach((b) => {
+      b.parent = this;
+    });
+
+    grandParent.children[parentIdx] = parent;
+    grandParent.children.splice(parentIdx + 1, 0, this);
+
+    return { parent, grandParent };
+  }
+
   toJson(): any {
     return {
       id: this.id,
