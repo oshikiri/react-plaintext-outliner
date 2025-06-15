@@ -1,10 +1,4 @@
-import {
-  useRef,
-  useEffect,
-  JSX,
-  MouseEventHandler,
-  KeyboardEventHandler,
-} from "react";
+import { useRef, useEffect, JSX, MouseEventHandler } from "react";
 
 import { useStore } from "../state";
 import BlockEntity from "../BlockEntity";
@@ -13,14 +7,8 @@ import {
   setCursor,
   getTextsAroundCursor,
   getNearestCursorOffset,
-  isCaretAtLastLine,
-  isCaretAtFirstLine,
-  getOffsetFromLineStart,
-  getCursorPositionInBlock,
 } from "../dom";
-import * as dom from "../dom";
-import { getNewlineRangeset } from "../Range";
-import * as keyboardEvent from "./keyboardevent";
+import { KeyDownEventHandlerGenerator } from "./keyboardevent";
 
 export default function BlockComponent({
   block,
@@ -53,131 +41,14 @@ export default function BlockComponent({
     setBlockById(block.id, block);
   };
 
-  const onKeyDown: KeyboardEventHandler = (event) => {
-    const currentElement = contentRef.current;
-    const currentInnerText: string = currentElement?.innerText || "";
-
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      const { beforeCursor, afterCursor } = getTextsAroundCursor();
-      const newBlock = createNextBlock(block.id, beforeCursor, afterCursor);
-      setCursorPosition(newBlock.id, 0);
-    } else if (event.key === "Tab") {
-      event.preventDefault();
-      block.content = currentInnerText;
-      setBlockById(block.id, block);
-
-      if (event.shiftKey) {
-        const { parent, grandParent } = block.outdent();
-        if (parent) {
-          setBlockById(parent.id, parent);
-        }
-        if (grandParent) {
-          setBlockById(grandParent.id, grandParent);
-        }
-      } else {
-        const parent = block.indent();
-        if (parent) {
-          setBlockById(parent.id, parent);
-        }
-      }
-
-      const { startOffset } = getTextsAroundCursor();
-      setCursorPosition(block.id, startOffset);
-    } else if (event.key === "ArrowDown") {
-      if (!currentElement || !isCaretAtLastLine(block.content)) {
-        return;
-      }
-
-      event.preventDefault();
-      const nextBlock = block.getNextBlock();
-      if (!nextBlock) {
-        return;
-      }
-
-      // Save the current block's content before moving.
-      block.content = currentInnerText;
-      setBlockById(block.id, block);
-
-      const caretOffset = getOffsetFromLineStart(currentElement);
-      const lastRange = getNewlineRangeset(block.content).getLastRange();
-      const nextCaretOffset = lastRange
-        ? Math.max(0, caretOffset - lastRange.l - 1)
-        : 0;
-      setCursorPosition(nextBlock.id, nextCaretOffset);
-    } else if (event.key === "ArrowUp") {
-      // If the caret is not at the first line, do nothing
-      if (!currentElement || !isCaretAtFirstLine()) {
-        return;
-      }
-
-      // If the caret is at the first line, move to the previous block.
-      event.preventDefault();
-      const prevBlock = block.getPrevBlock();
-      if (!prevBlock) {
-        return;
-      }
-
-      // If you edit the current block and then move to above, save its content.
-      block.content = currentInnerText;
-      setBlockById(block.id, block);
-
-      const offsetAtPrev = getOffsetFromLineStart(currentElement);
-      const lastRange = getNewlineRangeset(prevBlock.content).getLastRange();
-      const nextCaretOffset = lastRange
-        ? Math.min(lastRange.l + offsetAtPrev + 1, lastRange.r)
-        : 0;
-      setCursorPosition(prevBlock.id, nextCaretOffset);
-    } else if (event.key === "ArrowLeft") {
-      keyboardEvent.handlerArrowLeft(event, setCursorPosition, block);
-    } else if (event.key === "ArrowRight") {
-      keyboardEvent.handlerArrowRight(event, setCursorPosition, block);
-    } else if (event.key === "a" && event.ctrlKey) {
-      event.preventDefault();
-
-      const pos = getCursorPositionInBlock(window.getSelection());
-      const newlineBeforeCaret = pos?.newlines?.findLast((newline) => {
-        return newline.index < pos.anchorOffset;
-      });
-      if (newlineBeforeCaret) {
-        const newlineIndex = newlineBeforeCaret.index;
-        setCursorPosition(block.id, newlineIndex + 1);
-      } else {
-        setCursorPosition(block.id, 0);
-      }
-    } else if (event.key === "e" && event.ctrlKey) {
-      event.preventDefault();
-
-      const pos = getCursorPositionInBlock(window.getSelection());
-      const newlineAfterCaret = pos?.newlines?.find((newline) => {
-        return newline.index >= pos.anchorOffset;
-      });
-      if (newlineAfterCaret) {
-        const newlineIndex = newlineAfterCaret.index;
-        setCursorPosition(block.id, newlineIndex);
-      } else {
-        setCursorPosition(block.id, currentInnerText.length);
-      }
-    } else if (event.key === "Backspace") {
-      block.content = currentInnerText;
-
-      if (block.children.length > 0 || !dom.caretIsAtHeadOfBlock()) {
-        return;
-      }
-
-      const prevBlock = block.getPrevBlock();
-      if (!prevBlock) {
-        return;
-      }
-
-      event.preventDefault();
-      const prevContentLength = prevBlock.content.length;
-      prevBlock.content += block.content;
-      const [parent, idx] = block.getParentAndIdx();
-      parent?.children.splice(idx, 1);
-      setCursorPosition(prevBlock.id, prevContentLength);
-    }
-  };
+  const keyDownHandlerGenerator = new KeyDownEventHandlerGenerator(
+    block,
+    contentRef,
+    getTextsAroundCursor,
+    createNextBlock,
+    setCursorPosition,
+    setBlockById,
+  );
 
   const onClick: MouseEventHandler = (event) => {
     const startOffset = getNearestCursorOffset(event.clientX, event.clientY);
@@ -199,7 +70,7 @@ export default function BlockComponent({
           suppressContentEditableWarning={isEditing || undefined}
           onClick={onClick}
           onBlur={onBlur}
-          onKeyDown={onKeyDown}
+          onKeyDown={keyDownHandlerGenerator.generate()}
         >
           {block.content}
         </div>
