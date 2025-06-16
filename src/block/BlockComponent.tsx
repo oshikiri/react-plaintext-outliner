@@ -1,13 +1,8 @@
 import { useRef, useEffect, JSX, MouseEventHandler } from "react";
 
 import { useStore } from "../state";
-import BlockEntity from "../BlockEntity";
-import {
-  getOffset,
-  setCursor,
-  getTextsAroundCursor,
-  getNearestCursorOffset,
-} from "../dom";
+import BlockEntity from "./BlockEntity";
+import * as dom from "../dom";
 import { KeyDownEventHandlerGenerator } from "./keyboardevent";
 
 export default function BlockComponent({
@@ -27,10 +22,13 @@ export default function BlockComponent({
     if (isEditing && contentRef.current) {
       contentRef.current.focus();
 
-      const offset = getOffset(contentRef.current, cursorPosition.startOffset);
+      const offset = dom.getOffset(
+        contentRef.current,
+        cursorPosition.startOffset,
+      );
       const textNode = contentRef.current.childNodes[0] as HTMLElement;
       if (textNode) {
-        setCursor(textNode, offset);
+        dom.setCursor(textNode, offset);
       }
     }
   }, [cursorPosition]);
@@ -44,14 +42,17 @@ export default function BlockComponent({
   const keyDownHandlerGenerator = new KeyDownEventHandlerGenerator(
     block,
     contentRef,
-    getTextsAroundCursor,
+    dom.getTextsAroundCursor,
     createNextBlock,
     setCursorPosition,
     setBlockById,
   );
 
   const onClick: MouseEventHandler = (event) => {
-    const startOffset = getNearestCursorOffset(event.clientX, event.clientY);
+    const startOffset = dom.getNearestCursorOffset(
+      event.clientX,
+      event.clientY,
+    );
     setCursorPosition(block.id, startOffset);
     event.stopPropagation();
     return;
@@ -63,7 +64,10 @@ export default function BlockComponent({
       <div className="flex-grow">
         <div
           // Set px-2 for visibility when the cursor is at the beginning of the line.
-          className="whitespace-pre-wrap break-all px-2 empty:after:content-['\00a0']"
+          className="
+            whitespace-pre-wrap break-all px-2
+            empty:after:content-['\00a0']
+          "
           key={block.id + "-content"}
           ref={contentRef}
           contentEditable={isEditing || undefined}
@@ -83,25 +87,3 @@ export default function BlockComponent({
     </div>
   );
 }
-
-function createNext(
-  block: BlockEntity,
-  beforeCursor: string,
-  afterCursor: string,
-) {
-  console.log("createNext", { beforeCursor, afterCursor });
-  block.content = beforeCursor;
-
-  if (block.children.length > 0) {
-    const newBlock = new BlockEntity(afterCursor, []).withParent(block);
-    block.children.splice(0, 0, newBlock);
-    return { block, newBlock };
-  }
-
-  const newBlock = new BlockEntity(afterCursor, []).withParent(block.parent);
-  const [_parent, idx] = block.getParentAndIdx();
-  block.parent?.children.splice(idx + 1, 0, newBlock);
-  return { block, newBlock };
-}
-
-export { createNext };
