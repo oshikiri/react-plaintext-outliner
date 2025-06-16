@@ -1,7 +1,7 @@
 import { JSX, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import BlockEntity from "./BlockEntity";
+import BlockEntity from "./block/BlockEntity";
 import BlockComponent from "./block/BlockComponent";
 import { useStore, setToLocalStorage, clearLocalStorage } from "./state";
 

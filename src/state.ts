@@ -1,8 +1,7 @@
 import { create } from "zustand";
 
-import { createNext } from "./block/BlockComponent";
-import BlockEntity, { createBlock } from "./BlockEntity";
-import { initialPage } from "./data";
+import BlockEntity, { createBlock } from "./block/BlockEntity";
+import { initialPage } from "./block/data";
 
 const rootBlockKey = "rootBlock";
 const rootBlockFromLocalStorage = localStorage.getItem(rootBlockKey);
@@ -35,4 +34,24 @@ export function setToLocalStorage(rootBlock: BlockEntity) {
 }
 export function clearLocalStorage() {
   localStorage.removeItem(rootBlockKey);
+}
+
+function createNext(
+  block: BlockEntity,
+  beforeCursor: string,
+  afterCursor: string,
+) {
+  console.log("createNext", { beforeCursor, afterCursor });
+  block.content = beforeCursor;
+
+  if (block.children.length > 0) {
+    const newBlock = new BlockEntity(afterCursor, []).withParent(block);
+    block.children.splice(0, 0, newBlock);
+    return { block, newBlock };
+  }
+
+  const newBlock = new BlockEntity(afterCursor, []).withParent(block.parent);
+  const [_parent, idx] = block.getParentAndIdx();
+  block.parent?.children.splice(idx + 1, 0, newBlock);
+  return { block, newBlock };
 }

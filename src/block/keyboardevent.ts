@@ -1,13 +1,7 @@
 import { KeyboardEvent } from "react";
 import React from "react";
-import BlockEntity from "./../BlockEntity";
+import BlockEntity from "./BlockEntity";
 import * as dom from "./../dom";
-import {
-  getCursorPositionInBlock,
-  isCaretAtFirstLine,
-  isCaretAtLastLine,
-  getOffsetFromLineStart,
-} from "../dom";
 import { getNewlineRangeset } from "../Range";
 
 export class KeyDownEventHandlerGenerator {
@@ -95,7 +89,7 @@ export class KeyDownEventHandlerGenerator {
     currentElement: HTMLElement | null,
     currentInnerText: string,
   ) {
-    if (!currentElement || !isCaretAtLastLine(this.block.content)) {
+    if (!currentElement || !dom.isCaretAtLastLine(this.block.content)) {
       return;
     }
 
@@ -108,7 +102,7 @@ export class KeyDownEventHandlerGenerator {
     this.block.content = currentInnerText;
     this.setBlockById(this.block.id, this.block);
 
-    const caretOffset = getOffsetFromLineStart(currentElement);
+    const caretOffset = dom.getOffsetFromLineStart(currentElement);
     const lastRange = getNewlineRangeset(this.block.content).getLastRange();
     const nextCaretOffset = lastRange
       ? Math.max(0, caretOffset - lastRange.l - 1)
@@ -121,7 +115,7 @@ export class KeyDownEventHandlerGenerator {
     currentElement: HTMLElement | null,
     currentInnerText: string,
   ) {
-    if (!currentElement || !isCaretAtFirstLine()) {
+    if (!currentElement || !dom.isCaretAtFirstLine()) {
       return;
     }
 
@@ -134,7 +128,7 @@ export class KeyDownEventHandlerGenerator {
     this.block.content = currentInnerText;
     this.setBlockById(this.block.id, this.block);
 
-    const offsetAtPrev = getOffsetFromLineStart(currentElement);
+    const offsetAtPrev = dom.getOffsetFromLineStart(currentElement);
     const lastRange = getNewlineRangeset(prevBlock.content).getLastRange();
     const nextCaretOffset = lastRange
       ? Math.min(lastRange.l + offsetAtPrev + 1, lastRange.r)
@@ -145,8 +139,8 @@ export class KeyDownEventHandlerGenerator {
   private goToLineStart(event: KeyboardEvent) {
     event.preventDefault();
 
-    const pos = getCursorPositionInBlock(window.getSelection());
-    const newlineBeforeCaret = pos?.newlines?.findLast((newline) => {
+    const pos = dom.getCursorPositionInBlock(window.getSelection());
+    const newlineBeforeCaret = pos?.newlines?.findLast((newline: any) => {
       return newline.index < pos.anchorOffset;
     });
     if (newlineBeforeCaret) {
@@ -160,8 +154,8 @@ export class KeyDownEventHandlerGenerator {
   private goToLineEnd(event: KeyboardEvent, currentInnerText: string) {
     event.preventDefault();
 
-    const pos = getCursorPositionInBlock(window.getSelection());
-    const newlineAfterCaret = pos?.newlines?.find((newline) => {
+    const pos = dom.getCursorPositionInBlock(window.getSelection());
+    const newlineAfterCaret = pos?.newlines?.find((newline: any) => {
       return newline.index >= pos.anchorOffset;
     });
     if (newlineAfterCaret) {
